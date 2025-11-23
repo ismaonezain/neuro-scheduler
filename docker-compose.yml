@@ -1,0 +1,146 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: neuroscheduler
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - neuro-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - neuro-network
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password
+    networks:
+      - neuro-network
+
+  mongodb:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - neuro-network
+
+  api-gateway:
+    build: ./services/api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - POSTGRES_URL=postgres://admin:password@postgres:5432/neuroscheduler
+      - REDIS_URL=redis:6379
+      - JWT_SECRET=super-secret-key-change-in-production
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - neuro-network
+
+  task-service:
+    build: ./services/task-service
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - DATABASE_URL=postgres://admin:password@postgres:5432/neuroscheduler
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - neuro-network
+
+  ml-service:
+    build: ./services/ml-service
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - REDIS_URL=redis:6379
+      - MONGO_URL=mongodb://admin:password@mongodb:27017
+    depends_on:
+      - redis
+      - mongodb
+    networks:
+      - neuro-network
+
+  websocket-service:
+    build: ./services/websocket-service
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - REDIS_URL=redis:6379
+    depends_on:
+      - redis
+    networks:
+      - neuro-network
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+      - REACT_APP_WS_URL=http://localhost:3002
+    depends_on:
+      - api-gateway
+    networks:
+      - neuro-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - neuro-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - neuro-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  mongo_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  neuro-network:
+    driver: bridge
