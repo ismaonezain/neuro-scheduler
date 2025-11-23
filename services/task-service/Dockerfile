@@ -1,0 +1,1 @@
+Multi-stage Node.js Dockerfile using node:20-alpine, install dependencies, build TypeScript, expose port 3001

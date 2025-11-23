@@ -1,0 +1,1 @@
+Socket.io WebSocket server with Redis adapter for real-time notifications, task updates, user presence tracking, room management, authentication

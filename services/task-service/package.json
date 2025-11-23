@@ -1,0 +1,1 @@
+Node.js TypeScript project with dependencies express, typescript, typeorm, pg, amqplib, socket.io-client, dotenv, joi, compression, helmet, morgan, winston

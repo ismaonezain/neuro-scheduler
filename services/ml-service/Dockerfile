@@ -1,0 +1,1 @@
+Multi-stage Python Dockerfile using python:3.11-slim, install requirements, copy source code, expose port 8000, run with uvicorn

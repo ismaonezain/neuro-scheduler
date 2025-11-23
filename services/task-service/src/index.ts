@@ -1,0 +1,1 @@
+Express TypeScript server with TypeORM PostgreSQL connection, RabbitMQ message queue integration, task CRUD endpoints, task scheduling logic, error handling middleware, logging

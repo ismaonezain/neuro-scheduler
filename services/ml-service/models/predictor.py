@@ -1,0 +1,1 @@
+ML model class for task scheduling prediction using neural networks with TensorFlow, include training, prediction, feature extraction, model persistence methods

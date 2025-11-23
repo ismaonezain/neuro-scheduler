@@ -1,0 +1,1 @@
+Python FastAPI ML service with TensorFlow for task prediction and resource allocation with endpoints for training models, making predictions, analyzing historical data, and health checks. Include Redis caching, MongoDB logging, model loading/saving, feature engineering, and metrics collection.
